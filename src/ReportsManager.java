@@ -2,11 +2,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ReportsManager {
-    HashMap<Integer, MonthlyReport> monthReportsTable;
-    YearlyReport yearlyReport;
-    FileReader fileReader;
-    boolean yearlyReportIsBeenRead;
-    boolean monthlyReportsAreBeenRead;
+    private final HashMap<Integer, MonthlyReport> monthReportsTable;
+    private final YearlyReport yearlyReport;
+    private final FileReader fileReader;
+    private boolean yearlyReportIsBeenRead;
+    private boolean monthlyReportsAreBeenRead;
 
     public ReportsManager(){
         monthReportsTable = new HashMap<>();
@@ -22,21 +22,27 @@ public class ReportsManager {
 
             String fileName = "m.20210" + i + ".csv";
             ArrayList<String> lines = fileReader.readFileContents(fileName);
-            lines.remove(0);
-
-            for (String line : lines){
-                String[] lineContent = line.split(",");
-
-                String itemName = lineContent[0];
-                boolean isExpense = Boolean.parseBoolean(lineContent[1]);
-                int quantity = Integer.parseInt(lineContent[2]);
-                int unitPrice = Integer.parseInt(lineContent[3]);
-
-                monthlyReport.addTransaction(new Transaction(itemName, isExpense, quantity, unitPrice));
+            if(lines.isEmpty()){
+                System.out.println("Ошибка чтения файла " + fileName + "!");
             }
-            monthReportsTable.put(i, monthlyReport);
+            else{
+                lines.remove(0);
+
+                for (String line : lines){
+                    String[] lineContent = line.split(",");
+
+                    String itemName = lineContent[0];
+                    boolean isExpense = Boolean.parseBoolean(lineContent[1]);
+                    int quantity = Integer.parseInt(lineContent[2]);
+                    int unitPrice = Integer.parseInt(lineContent[3]);
+
+                    monthlyReport.addTransaction(new Transaction(itemName, isExpense, quantity, unitPrice));
+                }
+                monthReportsTable.put(i, monthlyReport);
+            }
         }
-        monthlyReportsAreBeenRead = true;
+        if(monthReportsTable.size() == 3)
+            monthlyReportsAreBeenRead = true;
     }
 
     public void readYearlyReport(){
@@ -44,35 +50,47 @@ public class ReportsManager {
         String fileName = "y." + yearNumber + ".csv";
 
         ArrayList<String> lines = fileReader.readFileContents(fileName);
-        lines.remove(0);
-
-        for (String line : lines){
-            String[] lineContent = line.split(",");
-
-            int month = Integer.parseInt(lineContent[0]);
-            int amount = Integer.parseInt(lineContent[1]);
-            boolean isExpense = Boolean.parseBoolean(lineContent[2]);
-
-            yearlyReport.reportRecords.add(new YearlyReportRecord(month, amount, isExpense));
+        if(lines.isEmpty()){
+            System.out.println("Ошибка чтения файла " + fileName + "!");
         }
-        yearlyReport.setYear(yearNumber);
-        yearlyReportIsBeenRead = true;
+        else {
+            lines.remove(0);
+
+            for (String line : lines) {
+                String[] lineContent = line.split(",");
+
+                int month = Integer.parseInt(lineContent[0]);
+                int amount = Integer.parseInt(lineContent[1]);
+                boolean isExpense = Boolean.parseBoolean(lineContent[2]);
+
+                yearlyReport.addRecord(new YearlyReportRecord(month, amount, isExpense));
+            }
+            yearlyReport.setYear(yearNumber);
+        }
+        if(!yearlyReport.reportRecordsIsEmpty())
+            yearlyReportIsBeenRead = true;
     }
 
     public void compareReports(){
         if(monthlyReportsNotRead() | yearlyReportNotRead())
             return;
 
-        for (YearlyReportRecord record : yearlyReport.reportRecords){
+        boolean isComparedSuccessfully = true;
+        for (YearlyReportRecord record : yearlyReport.getReportRecords()){
             if (record.isExpense()){
-                if(record.getAmount() != monthReportsTable.get(record.getMonth()).getAmountOfExpenses())
+                if(record.getAmount() != monthReportsTable.get(record.getMonth()).getAmountOfExpenses()) {
                     System.out.println("В " + record.getMonth() + "-ом месяце не сходятся расходы!");
+                    isComparedSuccessfully = false;
+                }
             } else {
-                if(record.getAmount() != monthReportsTable.get(record.getMonth()).getAmountOfIncome())
+                if(record.getAmount() != monthReportsTable.get(record.getMonth()).getAmountOfIncome()){
                     System.out.println("В " + record.getMonth() + "-ом месяце не сходятся доходы!");
+                    isComparedSuccessfully = false;
+                }
             }
         }
-        System.out.println("Несоответствий в отчетах необнаружено!");
+        if(isComparedSuccessfully)
+            System.out.println("Несоответствий в отчетах необнаружено!");
     }
 
     private boolean monthlyReportsNotRead(){

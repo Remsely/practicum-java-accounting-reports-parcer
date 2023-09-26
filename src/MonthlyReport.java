@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class MonthlyReport {
-    ArrayList<Transaction> monthTransactions;
+    private final ArrayList<Transaction> monthTransactions;
 
     public MonthlyReport(){
         monthTransactions = new ArrayList<>();

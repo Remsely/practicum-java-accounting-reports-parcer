@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class YearlyReport {
-    ArrayList<YearlyReportRecord> reportRecords;
+    private final ArrayList<YearlyReportRecord> reportRecords;
     private String year;
 
     public YearlyReport(){
@@ -19,6 +19,14 @@ public class YearlyReport {
 
     public String getYear() {
         return year;
+    }
+
+    public ArrayList<YearlyReportRecord> getReportRecords() {
+        return reportRecords;
+    }
+
+    public boolean reportRecordsIsEmpty(){
+        return reportRecords.isEmpty();
     }
 
     public HashMap<Integer, Integer> getMonthsProfits(){

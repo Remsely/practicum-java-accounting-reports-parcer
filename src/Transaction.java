@@ -11,14 +11,6 @@ public class Transaction {
         this.unitPrice = unitPrice;
     }
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public int getUnitPrice() {
-        return unitPrice;
-    }
-
     public String getItemName() {
         return itemName;
     }
